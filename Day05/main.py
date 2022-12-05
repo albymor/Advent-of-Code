@@ -2,44 +2,51 @@ with open('input.txt', 'r') as f:
     data = f.read()
 
 
-test_stack = [['N', 'Z'],
-              ['D', 'C', 'M'],
-              ['P']]
+test = """    [D]    
+[N] [C]    
+[Z] [M] [P]
+ 1   2   3 
 
-test_moves = """move 1 from 2 to 1
+move 1 from 2 to 1
 move 3 from 1 to 3
 move 2 from 2 to 1
 move 1 from 1 to 2"""
 
-input_stacks = [['R','W','F','H','T','S'],
-['W','Q','D','G','S'],
-['W','T','B'],
-['J','Z','Q','N','T','W','R','D'],
-['Z','T','V','L','G','H','B','F'],
-['G','S','B','V','C','T','P','L'],
-['P','G','W','T','R','B','Z'],
-['R','J','C','T','M','G','N'],
-['W','B','G','L']]
+
+def parser(raw_input):
+    raw_stacks , raw_moves = raw_input.split('\n\n')
+
+    stacks_d = {}
+    # stacks
+    for line in raw_stacks.split('\n'):
+        for i, el in enumerate(line):
+            if el.isalpha():
+                idx = (i-1)//4
+                if idx in stacks_d:
+                    stacks_d[idx].append(el)
+                else:
+                    stacks_d[idx] = [el]
+
+    stacks = []
+    for k in sorted(stacks_d):
+        a = stacks_d[k]
+        a.reverse()
+        stacks.append(a)
+
+    
+    instruction = []
+    moves = raw_moves.split('\n')
+    for move in moves:
+        move = move.split(' ')
+        move = [move[1], move[3], move[5]]
+        move = list(map(int, move))
+        instruction.append(move)
+
+    return stacks, instruction
 
 
-
-
-def get_part_one(stacks, moves):
-    rev = []
-    for s in stacks:
-        s.reverse()
-        rev.append(s)
-
-    stacks = rev
-
-    ins = []
-    moves = moves.split('\n')
-    for l in moves:
-        l = list(map(int, l.replace('move', '').replace(
-            'from', ',').replace('to', ',').split(',')))
-        ins.append(l)
-
-    for l in ins:
+def get_part_one(stacks, instruction):
+    for l in instruction:
         for i in range(l[0]):
             el = stacks[l[1]-1].pop()
             stacks[l[2]-1].append(el)
@@ -52,27 +59,13 @@ def get_part_one(stacks, moves):
 
 
 
-assert get_part_one(test_stack, test_moves) == 'CMZ'
-print(f'Part 1: {get_part_one(input_stacks,data)}')
+assert get_part_one(*parser(test)) == 'CMZ'
+print(f'Part 1: {get_part_one(*parser(data))}')
 
 # part 2
 
-def get_part_two(stacks, moves):
-    rev = []
-    for s in stacks:
-        s.reverse()
-        rev.append(s)
-
-    stacks = rev
-
-    ins = []
-    moves = moves.split('\n')
-    for l in moves:
-        l = list(map(int, l.replace('move', '').replace(
-            'from', ',').replace('to', ',').split(',')))
-        ins.append(l)
-
-    for l in ins:
+def get_part_two(stacks, instruction):
+    for l in instruction:
         removed = []
         for i in range(l[0]):
             removed.append(stacks[l[1]-1].pop())
@@ -88,26 +81,5 @@ def get_part_two(stacks, moves):
     return final 
 
 
-
-test_stack = [['N', 'Z'],
-              ['D', 'C', 'M'],
-              ['P']]
-
-test_moves = """move 1 from 2 to 1
-move 3 from 1 to 3
-move 2 from 2 to 1
-move 1 from 1 to 2"""
-
-input_stacks = [['R','W','F','H','T','S'],
-['W','Q','D','G','S'],
-['W','T','B'],
-['J','Z','Q','N','T','W','R','D'],
-['Z','T','V','L','G','H','B','F'],
-['G','S','B','V','C','T','P','L'],
-['P','G','W','T','R','B','Z'],
-['R','J','C','T','M','G','N'],
-['W','B','G','L']]
-
-
-assert get_part_two(test_stack, test_moves) == 'MCD'
-print(f'Part 2: {get_part_two(input_stacks,data)}')
+assert get_part_two(*parser(test)) == 'MCD'
+print(f'Part 2: {get_part_two(*parser(data))}')
