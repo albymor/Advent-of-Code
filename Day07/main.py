@@ -1,6 +1,5 @@
 import numpy as np
 import re
-from copy import copy
 with open('input.txt', 'r') as f:
     data = f.read()
 
@@ -32,16 +31,16 @@ $ ls
 class Node():
     def __init__(self, name, parent):
         self.name = name
-        self.childs = []
+        self.children = []
         self.sizes = []
         self.parent = parent
 
     def add_child(self, node):
-        self.childs.append(node)
+        self.children.append(node)
 
     def get_size(self):
         total = 0
-        for c in self.childs:
+        for c in self.children:
             total += c.get_size()
 
         total += sum(self.sizes)
@@ -52,15 +51,12 @@ class Node():
         return self.parent
 
     def has_child(self):
-        return len(self.childs) > 0
+        return len(self.children) > 0
 
 
-def get_part_one(data):
+def get_fs(data):
     root = Node('root', None)
     current_node = root
-    file_sizes = []
-    resume = {}
-    lfs = []
     data = data.split('\n')
     for l in data:
         if "$ cd" in l:
@@ -78,23 +74,26 @@ def get_part_one(data):
         elif "$ ls" in l:
             pass
         else:
-            aa = re.findall(r'(\d+) ', l)
-            if len(aa) > 0:
-                current_node.sizes.append(int(aa[0]))
+            dir_size = re.findall(r'(\d+) ', l)
+            if len(dir_size) > 0:
+                current_node.sizes.append(int(dir_size[0]))
 
-    tt = get_size(root, 0)
-
-    return tt
+    return root
 
 
 def get_size(node, total):
     size = node.get_size()
     if size < 100000:
         total += size
-    for c in node.childs:
+    for c in node.children:
         total = get_size(c, total)
 
     return total
+
+
+def get_part_one(data):
+    root = get_fs(data)
+    return get_size(root, 0)
 
 
 assert get_part_one(test) == 95437
@@ -104,47 +103,23 @@ print(f'Part 1: {get_part_one(data)}')
 
 
 def get_part_two(data):
-    root = Node('root', None)
-    current_node = root
-    file_sizes = []
-    resume = {}
-    lfs = []
-    data = data.split('\n')
-    for l in data:
-        if "$ cd" in l:
-            l = l.split(' ')
-            directory = l[-1]
-            if ('/' in directory):
-                current_node = root
-            elif ('..' in directory):
-                current_node = current_node.get_parent()
-            else:
-                n = Node(directory, current_node)
-                current_node.add_child(n)
-                current_node = n
+    root = get_fs(data)
 
-        elif "$ ls" in l:
-            pass
-        else:
-            aa = re.findall(r'(\d+) ', l)
-            if len(aa) > 0:
-                current_node.sizes.append(int(aa[0]))
+    sizes = get_min(root, [])
 
-    tt = get_min(root, [])
+    free = 70000000 - sizes[0]
 
-    free = 70000000 - tt[0]
+    expected_free = free + np.array(sizes)
+    expected_free = expected_free[expected_free > 30000000]
+    idx = np.argmin(expected_free)
 
-    aa = free + np.array(tt)
-    aa = aa[aa > 30000000]
-    idx = np.argmin(aa)
-
-    return aa[idx]-free
+    return expected_free[idx]-free
 
 
 def get_min(node, total):
     size = node.get_size()
     total.append(size)
-    for c in node.childs:
+    for c in node.children:
         total + get_min(c, total)
 
     return total
