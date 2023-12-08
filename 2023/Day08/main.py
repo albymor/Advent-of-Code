@@ -52,16 +52,12 @@ def get_part_one(data):
     steps = 0
 
     while n.name != 'ZZZ':
-        print(n.name)
         if next(procedure) == 'R':
             n = nodes[n.right]
         else:
             n = nodes[n.left]
 
         steps += 1
-
-    print(steps)
-
 
     return steps
 
@@ -104,8 +100,6 @@ def get_part_two(data):
         if 'A' in n:
             starting.append(nodes[n])
 
-    print(starting)
-
     lengths = []
 
     # we probably have loops. Calculate the number of steps for 
@@ -113,7 +107,6 @@ def get_part_two(data):
     for n in starting:
         steps = 0
         while not ('Z' in n.name):
-            print(n.name)
             if next(procedure) == 'R':
                 n = nodes[n.right]
             else:
@@ -121,14 +114,9 @@ def get_part_two(data):
 
             steps += 1
 
-        print(n.name, steps)
-
         lengths.append(steps)
 
     lcm_result = np.lcm.reduce(np.array(lengths))
-
-    print(lcm_result)
-
 
     return lcm_result
 
