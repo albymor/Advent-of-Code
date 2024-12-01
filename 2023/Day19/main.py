@@ -1,5 +1,6 @@
 import re
 from collections import OrderedDict
+import numpy as np
 
 
 with open('input.txt', 'r') as f:
@@ -84,6 +85,9 @@ class Workflow():
                     continue            
             else:
                 raise Exception('Unknown operator')
+            
+
+
 
 
 def get_part_one(data):
@@ -128,11 +132,113 @@ def get_part_one(data):
 assert get_part_one(test) == 19114
 print(f'Part 1: {get_part_one(data)}')
 
+roia = []
+class Workflow2():
+    def __init__(self, name, rules):
+        self.name = name
+        r = rules.split(',')
+        self.rules = []
+        regex = r"(\w+)(<|>)(\d+)\:(\w+)|(A|R|\w+)"
+        for rule in r:
+            m = re.match(regex, rule)
+            if m:
+                groups = [g for g in m.groups() if g is not None]
+                if len(groups) == 4:
+                    self.rules.append(Rule(*groups))
+                else:
+                    self.rules.append(Rule(None, None, 0, groups[0]))
 
 
+        self.res = []
+
+    def trap(self, rating, workflows):
+        print(rating)
+        self.res.append(rating)
+        roia.append(rating)
+        return True
+    
+
+    def bounds(self, bounds, limit, symbol):
+        if symbol == '<':
+            r = np.arange(bounds[0], bounds[1])
+            a = r<limit
+            n = np.where(a)[0]
+            return [n.min(), n.max() ]
+        else:
+            r = np.arange(bounds[0], bounds[1])
+            a = r>limit
+            n = np.where(a)[0]
+            return [n.min(), n.max() ]
+
+
+    def solve(self, rating, workflows):
+        print(f'{self.name}', end='->')
+        for rule in self.rules:
+            if rule.op == None:
+                if rule.dest == 'A':
+                    self.trap(rating, workflows)
+                    continue
+                elif rule.dest == 'R':
+                    continue
+                else:
+                    workflows[rule.dest].solve(rating, workflows)            
+            elif rule.op == '<':
+                #rating[rule.symbol][1] = rule.qty
+                rating[rule.symbol]= self.bounds(rating[rule.symbol], rule.qty, rule.op)
+                if rule.dest == 'A':
+                    self.trap(rating, workflows)
+                    continue
+                elif rule.dest == 'R':
+                    continue
+                else:
+                    workflows[rule.dest].solve(rating, workflows)
+            elif rule.op == '>':
+                rating[rule.symbol][0] = rule.qty
+                if rule.dest == 'A':
+                    self.trap(rating, workflows)
+                    continue
+                elif rule.dest == 'R':
+                    continue
+                else:
+                    workflows[rule.dest].solve(rating, workflows)           
+            else:
+                raise Exception('Unknown operator')
+            
 # part 2 
 def get_part_two(data):
-    return 1
+    initial_condition_set= {param_name: [0, 4001] for param_name in ("x", "m", "a", "s")}
+    print(initial_condition_set)
+    flows, rat = data.split('\n\n')
+
+    workflows = {}
+
+    for wf in flows.split('\n'):
+        name, rules = wf.split('{')
+        workflows[name]=Workflow2(name, rules[:-1])
+
+    ratings = []
+
+    for rating in rat.split('\n'):
+        rating = rating[1:-1]
+        r = OrderedDict()
+        for kv in rating.split(','):
+            k, v = kv.split('=')
+            r[k] = int(v)
+        ratings.append(r)
+
+    print(workflows)
+    print(ratings)
+
+    start = workflows['in']
+    start.solve(initial_condition_set, workflows)
+
+    print(roia)
+
+    total = 0
+
+    print(total)
+
+    return total
 
 assert get_part_two(test) == 1
 print(f'Part 2: {get_part_two(data)}')
