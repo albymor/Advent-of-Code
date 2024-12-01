@@ -9,14 +9,18 @@ test = """???.### 1,1,3
 ?#?#?#?#?#?#?#? 1,3,1,6
 ????.#...#... 4,1,1
 ????.######..#####. 1,6,5
-?###???????? 3,2,1"""   
+?###???????? 3,2,1""" 
+
+def check(pattern, comb):
+    pattern = pattern.lstrip('.')
+
+    if pattern[0] == '?':
+        a = check('.'+pattern[1:], comb)
+        b = check('#'+pattern[1:], comb)
 
 def get_part_one(data):
     lines = data.split('\n')
-
     
-
-
     admissible = 0
 
     for line in tqdm(lines):
@@ -47,34 +51,16 @@ def get_part_one(data):
     return admissible
 
 assert get_part_one(test) == 21
-#print(f'Part 1: {get_part_one(data)}')
+print(f'Part 1: {get_part_one(data)}')
 
+exit()
 
-
-# part 2 
-def get_part_two(data):
-    lines = data.split('\n')
-
+def calc(pattern, comb):
+    q = deque()
+    q.append(pattern)
     admissible = 0
-
-    for line in tqdm(lines):
-        pattern, comb = line.split()
-        combs =  [comb for _ in range(5)]
-        comb = ','.join(combs)
-        comb =  tuple(map(int, comb.split(',')))
-        #comb = tuple(sorted(comb))
-
-        patts = [pattern for _ in range(5)]
-
-        #  ???.###????.###????.###????.###????.###
-        #  ???.###????.###????.###????.###????.###
-
-        pattern = '?'.join(patts)
-
-        q = deque()
-        q.append(pattern)
-
-        def check(patt, comb):
+    admissible_patts = set()
+    def check(patt, comb):
             is_ok = True
             num = 0
             in_p = False
@@ -102,23 +88,73 @@ def get_part_two(data):
 
 
 
-        while q:
-            scheme = q.popleft()
-            if '?' in scheme:
-                a = check(scheme.replace('?','#',1), comb)
-                if a:
-                    q.append(scheme.replace('?','#',1))
+    while q:
+        scheme = q.popleft()
+        if '?' in scheme:
+            a = check(scheme.replace('?','#',1), comb)
+            if a:
+                q.append(scheme.replace('?','#',1))
+            
+            a = check(scheme.replace('?','.',1), comb)
+            if a:
+                q.append(scheme.replace('?','.',1))
+        else:
+            r = re.compile(r'#+')
+            m = r.finditer(scheme)
+            if m:
+                this_comb = tuple([match.span()[1] -match.span()[0] for match in m])
+                if this_comb == comb:
+                    admissible += 1
+                    admissible_patts.add(scheme)
+
+
+    return admissible, admissible_patts
                 
-                a = check(scheme.replace('?','.',1), comb)
-                if a:
-                    q.append(scheme.replace('?','.',1))
-            else:
-                r = re.compile(r'#+')
-                m = r.finditer(scheme)
-                if m:
-                    this_comb = tuple([match.span()[1] -match.span()[0] for match in m])
-                    if this_comb == comb:
-                        admissible += 1
+    
+        
+
+
+# part 2 
+def get_part_two(data):
+    lines = data.split('\n')
+
+    admissible = 0
+
+    for line in tqdm(lines):
+        pattern, comb = line.split()
+
+        cc = comb
+        #combs =  [comb for _ in range(5)]
+        #comb = ','.join(combs)
+        comb =  tuple(map(int, comb.split(',')))
+        #comb = tuple(sorted(comb))
+
+       #patts = [pattern for _ in range(5)]
+       #pattern = '?'.join(patts)
+
+        a, p = calc(pattern, comb)
+
+        admissible += a
+
+        combs =  [cc for _ in range(5)]
+        comb = ','.join(combs)
+
+        ad = 0
+        for pp in p:
+            patts = [pp for _ in range(5)]
+            pattern = '?'.join(patts)
+            a, _ = calc(pattern, comb)
+            ad += a
+
+        print(ad)
+        exit()
+
+
+        print(p)
+
+        
+
+        
 
 
     print(admissible)
@@ -127,6 +163,6 @@ def get_part_two(data):
 
     return admissible
 
-assert get_part_two(test) == 525152
+assert get_part_two(test) == 21
 print(f'Part 2: {get_part_two(data)}')
 
