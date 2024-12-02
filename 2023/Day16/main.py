@@ -195,7 +195,9 @@ def get_part_two(data):
     for lol in tqdm(startpoint):
         beams = deque([lol])  
 
-        deads = [] 
+        deads = []
+
+        visited = set() 
 
 
         energized = copy.deepcopy(mappa)
@@ -204,8 +206,11 @@ def get_part_two(data):
 
             b = beams.popleft()
             x, y = b.get_coordinates()
+            if (b.direction, x, y) in visited:
+                continue
             if 0 <= x < len(mappa[0]) and 0 <= y < len(mappa):
                 energized[y][x] = '#'
+                visited.add((b.direction, x, y))
             else:
                 # dead beam
                 deads.append(b.born_point)
