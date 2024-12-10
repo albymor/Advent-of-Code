@@ -3,3 +3,4 @@ build/
 target/
 Cargo.lock
 input.txt
+venv
