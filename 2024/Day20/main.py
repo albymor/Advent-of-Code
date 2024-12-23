@@ -109,7 +109,7 @@ class Node:
         return self.cost < other.cost
     
 
-from collections import deque
+from collections import deque, OrderedDict
 def DFS(start, path, target_depth, mappa):
     if start ==  complex(7,7):
         pass
@@ -135,18 +135,23 @@ def DFS(start, path, target_depth, mappa):
                 #dist_saved =  path[k].cost - path[start].cost - 2
                 dist_saved =  path[k].cost - path[start].cost - depth-1
                 if dist_saved > 0:
-                    if (start, k) not in done:
-                        if dist_saved in saved:
-                            saved[dist_saved] += 1
-                        else:
-                            saved[dist_saved] = 1
-                    done.add((start, k))
+                    if (start, k) in saved:
+                        if saved[(start, k)] < dist_saved:
+                            print('better')
+                            saved[(start, k)] = dist_saved
+                    else:
+                        saved[(start, k)] = dist_saved
 
-            if v == '#' and depth+1 <= target_depth and k not in explored:
+            if v == '#' and depth+1 <= target_depth:
                 q.append((k, depth+1))
-            
+    res = {}
+    for k, v in saved.items():
+        if v in res:
+            res[v] +=1
+        else:
+            res[v] = 1
 
-    return saved
+    return res
 
 
     
@@ -174,57 +179,10 @@ def find_cheat2(path, mappa, th=0, depth=1):
     for k , v in saved.items():
         if k >= th:
             res += v
+    
+    print(dict(sorted(saved.items())), res)
 
-    print(saved, res)
-
-    return res
-
-
-# def find_cheat(path, mappa, th=0):
-#     path = path[::-1]
-#     node_pos = [p.pos for p in path]
-#     nodes_dict = {}
-#     total_cost = len(path)
-#     saved = {}
-#     saved2 = {}
-#     for p in path:
-#         nodes_dict[p.pos] = p
-
-#     dirs = [1,-1, 1j, -1j]
-
-#     for p in path:
-#         if p.pos == complex(7,7):
-#             pass
-#         for d in dirs:
-#             np = p.pos+d
-#             block = get_block(np, mappa)
-#             if block == '#' and np+d in nodes_dict:
-#                 s =  nodes_dict[np+d].cost - p.cost - 2
-#                 if s > 0:
-#                     #print_map(mappa, [p.pos, np, np+d])
-#                     if s in saved:
-#                         saved[s] += 1
-#                     else:
-#                         saved[s] = 1
-
-#         ss = DFS(p.pos, nodes_dict, 1, mappa )
-#         for k, v in ss.items():
-#             if k in saved2:
-#                 saved2[k] += v
-#             else:
-#                 saved2[k] = v
-
-#         pass
-
-#     res = 0
-#     for k , v in saved.items():
-#         if k >= th:
-#             res += v
-
-#     return res
-
-
-                
+    return res          
 
 
 def get_part_one(data, th=0, depth=1):
@@ -281,13 +239,8 @@ def get_part_one(data, th=0, depth=1):
     return find_cheat2(parents, mappa, th, depth)
 
 
-    print(start,end)
-    
-
-    return 0
-
-assert get_part_one(test) == 44
-print(f'Part 1: {get_part_one(data, th=100, depth=1)}')
+# assert get_part_one(test) == 44
+# print(f'Part 1: {get_part_one(data, th=100, depth=1)}')
 
 
 
@@ -297,6 +250,6 @@ def get_part_two(data):
 
     return 1
 
-assert get_part_one(test, depth=19, th=50) == 285
+assert get_part_one(test, depth=20, th=50) == 285
 print(f'Part 2: {get_part_one(data, th=100, depth=20)}')
 
