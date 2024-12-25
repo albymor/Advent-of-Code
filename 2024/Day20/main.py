@@ -109,7 +109,7 @@ class Node:
         return self.cost < other.cost
     
 
-from collections import deque, OrderedDict
+from collections import deque
 def DFS(start, path, target_depth, mappa):
     if start ==  complex(7,7):
         pass
@@ -132,17 +132,15 @@ def DFS(start, path, target_depth, mappa):
             if k == complex(5,7):
                 pass
             if k in path and depth != 0:
-                #dist_saved =  path[k].cost - path[start].cost - 2
                 dist_saved =  path[k].cost - path[start].cost - depth-1
                 if dist_saved > 0:
                     if (start, k) in saved:
                         if saved[(start, k)] < dist_saved:
-                            print('better')
                             saved[(start, k)] = dist_saved
                     else:
                         saved[(start, k)] = dist_saved
 
-            if v == '#' and depth+1 <= target_depth:
+            if depth+1 <= target_depth:
                 q.append((k, depth+1))
     res = {}
     for k, v in saved.items():
@@ -156,9 +154,8 @@ def DFS(start, path, target_depth, mappa):
 
     
 
-
+from tqdm import tqdm
 def find_cheat2(path, mappa, th=0, depth=1):
-    print(depth, th)
     path = path[::-1]
     nodes_dict = {}
     for p in path:
@@ -166,7 +163,7 @@ def find_cheat2(path, mappa, th=0, depth=1):
 
     saved = {}
 
-    for k, v in nodes_dict.items():
+    for k, v in tqdm(nodes_dict.items()):
         ss = DFS(k, nodes_dict, depth, mappa )
         for k, v in ss.items():
             if k >= th:
@@ -180,8 +177,6 @@ def find_cheat2(path, mappa, th=0, depth=1):
         if k >= th:
             res += v
     
-    print(dict(sorted(saved.items())), res)
-
     return res          
 
 
@@ -239,17 +234,9 @@ def get_part_one(data, th=0, depth=1):
     return find_cheat2(parents, mappa, th, depth)
 
 
-# assert get_part_one(test) == 44
-# print(f'Part 1: {get_part_one(data, th=100, depth=1)}')
+assert get_part_one(test) == 44
+print(f'Part 1: {get_part_one(data, th=100, depth=1)}')
 
-
-
-# part 2 
-def get_part_two(data):
-    lines = data.split('\n')
-
-    return 1
-
-assert get_part_one(test, depth=20, th=50) == 285
-print(f'Part 2: {get_part_one(data, th=100, depth=20)}')
+assert get_part_one(test, depth=19, th=50) == 285
+print(f'Part 2: {get_part_one(data, th=100, depth=19)}')
 
